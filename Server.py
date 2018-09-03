@@ -21,12 +21,12 @@ def main():
 			User = [ident, Mensaje]
 			UsersConnected[ident] = eval(str(Mensaje))
 
-			socket.send_multipart(UsersConnected[ident])
+			socket.send_multipart([ident, bytes(str(UsersConnected), 'ascii')])
 
 				#socket.send_string('a')
-			print ("Movimiento: %s" % User)
+			#print ("Movimiento: %s" % User)
 
-
+		print(UsersConnected)
 
 if __name__ == '__main__':
 	main()

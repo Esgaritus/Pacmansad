@@ -9,23 +9,6 @@ from Funciones import *
 Ancho = 32 * 35
 Alto = 32 * 19
 
-def RanPos():
-	ran = random.rand(0,3)
-
-
-def last():
-	Run = True
-	while Run:
-		for event in pg.event.get(): # Cierre
-			if event.type == pg.KEYDOWN:
-				if event.key == pg.K_e:
-					Socket.send(b"hola")
-					Mensaje=Socket.recv()
-					lobby(Mensaje)
-				if event.key == pg.K_ESCAPE:
-					Run=False
-
-
 def lobby(Mensaje):
 
 	waiting = True
@@ -47,7 +30,16 @@ def main(idplayer):
 
 	Socket.send_multipart([bPOSPlayer])
 
+	player = Socket.recv_multipart()
+	print(player)
+	playersConnected = eval(player[0])
 	imagen=Recortar("pacmanR.png",3,4)
+	print(playersConnected)
+
+
+	#input()
+
+
 
 	players[idplayer] = Jugador(imagen,0,0)
 
@@ -118,9 +110,22 @@ def main(idplayer):
 	Marco.y = 350
 	General.add(Marco)
 
+	for usernameInBytes in playersConnected:
+		nickname= usernameInBytes.decode("ascii")
+		players[nickname] = Jugador(imagen,0,0)
+		posplayer=playersConnected[usernameInBytes][0].decode('ascii')
+		posplayer=eval(posplayer)
+
+		players[nickname].rect.x=posplayer[0]
+		players[nickname].rect.y=posplayer[1]
+		players[nickname].muros = Muros
+		Personajes.add(players[nickname])
+
 	Running=True
 
 	while Running:
+
+		bPOSPlayer = bytes(str(players[idplayer].GetPos()), 'ascii')
 
 		for event in pg.event.get(): # Cierre
 			if event.type == pg.QUIT:
@@ -131,32 +136,36 @@ def main(idplayer):
 					Running = False
 
 				if event.key == pg.K_UP:
-					Socket.send(b"UP")
+					Socket.send_multipart([bPOSPlayer, b"UP"])
 					players[idplayer].dir = 1
 					players[idplayer].var_y = -5
 					players[idplayer].var_x = 0
 					#Cambiar de direccion
 				if event.key== pg.K_DOWN:
-					Socket.send(b"DOWN")
+					Socket.send_multipart([bPOSPlayer, b"DOWN"])
 
 					players[idplayer].dir = 3
 					players[idplayer].var_y = 5
 					players[idplayer].var_x = 0
 					#Cambiar de direccion
 				if event.key== pg.K_LEFT:
-					Socket.send(b"LEFT")
+					Socket.send_multipart([bPOSPlayer, b"LEFT"])
 					players[idplayer].dir = 2
 					players[idplayer].var_y = 0
 					players[idplayer].var_x = -5
 					#Cambiar de direccion
 				if event.key== pg.K_RIGHT:
-					Socket.send(b"RIGHT")
+					Socket.send_multipart([bPOSPlayer, b"RIGHT"])
 					players[idplayer].dir = 0
 					players[idplayer].var_y = 0
 					players[idplayer].var_x = 5
 				if event.key == pg.K_k:
 					players[idplayer].GetPos()
 					#Cambiar de direccion
+
+
+			for s in players:
+				
 
 
 		Personajes.update()
@@ -194,7 +203,7 @@ if __name__ == '__main__':
 	# while Run:
 	# 	for event in pg.event.get(): # Cierre
 	# 			if event.key == pg.K_e:
-	# 				Socket.send(b"hola")
+	# 				Socket.send_multipart(b"hola")
 	# 				Mensaje=Socket.recv()
 	# 				lobby(Mensaje)
 	# 			if event.key == pg.K_ESCAPE:
